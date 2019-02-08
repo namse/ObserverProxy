@@ -7,7 +7,8 @@ interface IState {
       value: string,
     }
   },
-  arrayProperty: { value: string }[][],
+  arrayArrayObjectProperty: { value: string }[][],
+  arrayProperty: string[],
 }
 
 const initialState: IState = {
@@ -17,13 +18,16 @@ const initialState: IState = {
       value: "namse is Messi of bed",
     },
   },
-  arrayProperty: [
+  arrayArrayObjectProperty: [
     [
       {
         value: '0, 0',
       },
       {
         value: '0, 1',
+      },
+      {
+        value: '0, 2',
       },
     ],
     [
@@ -37,53 +41,160 @@ const initialState: IState = {
         value: '1, 2',
       },
     ],
-  ]
+  ],
+  arrayProperty: ['0'],
 };
 
-const components: Component[] = [];
+const propertyComponentsMap: any = {};
 
-function createObserverProxy<T>(object: T): T {
+type PropertyComponentsMapKey = {
+  symbol: Symbol;
+  propertyName: string | number | Symbol;
+}
+
+function getPropertyComponents(key: PropertyComponentsMapKey): Component[] {
+  if (!propertyComponentsMap[key.symbol as any]) {
+    propertyComponentsMap[key.symbol as any] = {};
+  }
+  return propertyComponentsMap[key.symbol as any][key.propertyName as any];
+}
+
+function setPropertyComponents(key: PropertyComponentsMapKey, components: Component[]) {
+  if (!propertyComponentsMap[key.symbol as any]) {
+    propertyComponentsMap[key.symbol as any] = {};
+  }
+  propertyComponentsMap[key.symbol as any][key.propertyName as any] = components;
+}
+
+function setSymbol(object: any, symbol: symbol = Symbol()) {
+  object.__symbol__ = Symbol();
+}
+
+function getSymbol(object: any): symbol {
+  return object.__symbol__;
+}
+
+function copySymbol(fromObject: any, toObject: any) {
+  const symbol = getSymbol(fromObject);
+  setSymbol(toObject, symbol);
+
+  Object.keys(fromObject).forEach((key) => {
+    const fromObjectValue = fromObject[key];
+    const toObjectValue = toObject[key];
+    if (typeof fromObjectValue !== 'object' || typeof toObjectValue !== 'object') {
+      return;
+    }
+    copySymbol(fromObjectValue, toObjectValue);
+  })
+}
+
+const symbolProxyComponentsMap: {
+  [symbol: string]: Array<{ proxy: any, component: Component }>
+} = {};
+
+const subscribingReactComponents: Set<Component> = new Set();
+
+function makePropertyAsProxy(object: Object, proxy: any, reactComponent: Component) {
   Object.entries(object).forEach(([key, value]) => {
     if (typeof value === 'object') {
-      (object as any)[key] = createObserverProxy(value);
+      proxy[key] = createObserverProxy(value, reactComponent);
     }
   });
+}
 
-  return new Proxy(object as Object, {
-    set(target, name, newValue) {
+function createObserverProxy<T>(object: T, reactComponent: Component): T {
+  if (!getSymbol(object)) {
+    setSymbol(object);
+  }
+
+  const proxy: any = {};
+  const symbol = getSymbol(object);
+  if (!symbolProxyComponentsMap[symbol as any]) {
+    symbolProxyComponentsMap[symbol as any] = [];
+  }
+  const proxies = symbolProxyComponentsMap[symbol as any];
+  proxies.push({
+    proxy,
+    component: reactComponent,
+  });
+
+  makePropertyAsProxy(object, proxy, reactComponent);
+
+  return new Proxy(proxy as Object, {
+    get(target: any, name) {
+      console.log(`i use -------------------------------------${name as string}`);
+      if (reactComponent) {
+        let components = getPropertyComponents({
+          symbol: getSymbol(object),
+          propertyName: name,
+        });
+        if (!components) {
+          components = [];
+          setPropertyComponents({
+            symbol: getSymbol(object),
+            propertyName: name,
+          }, components);
+        }
+
+        if (!components.includes(reactComponent)) {
+          components.push(reactComponent);
+
+          const originalComponentWillUnmount = reactComponent.componentWillUnmount;
+          reactComponent.componentWillUnmount = () => {
+            const index = components.indexOf(reactComponent);
+            components.splice(index, 1);
+
+            if (originalComponentWillUnmount) {
+              originalComponentWillUnmount.call(reactComponent);
+            }
+          }
+        }
+      }
+      const value = (object as any)[name];
+      if (typeof value === 'object') {
+        const childProxy = target[name];
+        return childProxy;
+      }
+      return value;
+    },
+    set(target: any, name, newValue) {
       if (typeof newValue === 'object') {
-        newValue = createObserverProxy(newValue);
+        const previousValue = (object as any)[name];
+
+        copySymbol(previousValue, newValue);
+
+        const symbol = getSymbol(object);
+
+        symbolProxyComponentsMap[symbol as any].forEach(({ proxy, component }) => {
+          proxy[name] = createObserverProxy(newValue, component);
+        });
       }
 
-      (target as any)[name] = newValue;
+      console.log("before");
+      console.log(target, name, newValue);
+      Reflect.set(object as Object, name, newValue);
+      console.log("after");
 
-      components.forEach(component => {
-        component.forceUpdate();
-      })
+      const components = getPropertyComponents({
+        symbol: getSymbol(object),
+        propertyName: name,
+      });
+
+      console.log(components);
+
+      if (components) {
+        components.forEach(component => {
+          component.forceUpdate();
+        });
+      }
+
       return true;
     },
   }) as T;
 }
 
-const state = createObserverProxy<IState>(initialState);
-
+console.log('after init state')
 export default function getGlobalState(reactComponent: Component) {
-  return new Proxy(state, {
-    get(target, name) {
-      if (!components.includes(reactComponent)) {
-        components.push(reactComponent);
-
-        const originalComponentWillUnmount = reactComponent.componentWillUnmount;
-        reactComponent.componentWillUnmount = () => {
-          const index = components.indexOf(reactComponent);
-          components.splice(index, 1);
-
-          if (originalComponentWillUnmount) {
-            originalComponentWillUnmount.call(reactComponent);
-          }
-        }
-      }
-      return (target as any)[name];
-    }
-  });
+  subscribingReactComponents.add(reactComponent);
+  return createObserverProxy(initialState, reactComponent);
 }
