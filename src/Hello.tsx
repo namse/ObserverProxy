@@ -10,10 +10,13 @@ interface IHelloProps {
 export default class Hello extends Component<IHelloProps, any> {
   private globalState = getGlobalState(this);
 
+  public componentWillUnmount() {
+    console.log('componentWillUnmount of Hello');
+  }
   render() {
     return (
       <div className="App">
-        {this.globalState.abc}
+        {this.globalState.objectProperty.child.value}
       </div>
     );
   }

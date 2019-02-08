@@ -1,31 +1,53 @@
 import { Component } from "react";
 
-const initialState = {
+interface IState {
   abc: 123,
+  objectProperty: {
+    child: {
+      value: string,
+    }
+  },
+}
+
+const initialState: IState = {
+  abc: 123,
+  objectProperty: {
+    child: {
+      value: "namse is Messi of bed",
+    },
+  },
 };
 
 const components: Component[] = [];
 
-const state = new Proxy(initialState, {
-  get(target, name) {
-    console.log(target, name);
-    return (target as any)[name];
-  },
-  set(target, name, newValue) {
-    (target as any)[name] = newValue;
+function createObserverProxy<T>(object: T): T {
+  Object.entries(object).forEach(([key, value]) => {
+    if (typeof value === 'object') {
+      (object as any)[key] = createObserverProxy(value);
+    }
+  });
 
-    console.log(components);
-    components.forEach(component => {
-      component.forceUpdate();
-    })
-    return true;
-  },
-});
+  return new Proxy(object as Object, {
+    set(target, name, newValue) {
+      if (typeof newValue === 'object') {
+        newValue = createObserverProxy(newValue);
+      }
+
+      (target as any)[name] = newValue;
+
+      components.forEach(component => {
+        component.forceUpdate();
+      })
+      return true;
+    },
+  }) as T;
+}
+
+const state = createObserverProxy<IState>(initialState);
 
 export default function getGlobalState(reactComponent: Component) {
   return new Proxy(state, {
     get(target, name) {
-      console.log('sex ', reactComponent);
       if (!components.includes(reactComponent)) {
         components.push(reactComponent);
 
