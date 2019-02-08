@@ -1,12 +1,13 @@
 import { Component } from "react";
 
 interface IState {
-  abc: 123,
+  abc: number,
   objectProperty: {
     child: {
       value: string,
     }
   },
+  arrayProperty: { value: string }[][],
 }
 
 const initialState: IState = {
@@ -16,6 +17,27 @@ const initialState: IState = {
       value: "namse is Messi of bed",
     },
   },
+  arrayProperty: [
+    [
+      {
+        value: '0, 0',
+      },
+      {
+        value: '0, 1',
+      },
+    ],
+    [
+      {
+        value: '1, 0',
+      },
+      {
+        value: '1, 1',
+      },
+      {
+        value: '1, 2',
+      },
+    ],
+  ]
 };
 
 const components: Component[] = [];

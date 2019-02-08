@@ -12,9 +12,10 @@ class App extends Component {
 
   public componentDidMount() {
     setTimeout(() => {
-      console.log('before set objectProperty.value');
+      console.log('before 1');
       this.globalState.objectProperty.child.value = 'veresdave 1';
-      console.log('after set objectProperty.child.value');
+      this.globalState.arrayProperty[0][0].value = 'ㅗㅜㅑ';
+      console.log('after 1');
     }, 1000);
 
     setTimeout(() => {
@@ -64,6 +65,8 @@ class App extends Component {
         <header className="App-header">
           <p>
             {this.globalState.objectProperty.child.value}
+            <br></br>
+            {this.globalState.arrayProperty[0][0].value}
           </p>
           {this.state.showTest ? <Hello testBoolean={false} testNumber={123} testString="test123"></Hello> : false}
         </header>

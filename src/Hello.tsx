@@ -17,6 +17,8 @@ export default class Hello extends Component<IHelloProps, any> {
     return (
       <div className="App">
         {this.globalState.objectProperty.child.value}
+          <br></br>
+        {this.globalState.arrayProperty[0][0].value}
       </div>
     );
   }
