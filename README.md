@@ -36,7 +36,7 @@ function onStateUpdate() {
 // call this funciton before you destroy observer.
 function onObserverWillDestroy() {
 
-},
+}
 
 const observer = {
   onStateUpdate,
@@ -56,7 +56,6 @@ const abc = objectProxy.abc;
 console.log(abc); // console output -> 123
 
 console.log(myObject.abc); // console output -> 123
-...
 
 
 // 4. update
