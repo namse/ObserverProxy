@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import getGlobalState from './getGlobalState';
+import { getGlobalStateForReactComponent } from './GlobalState/getGlobalState';
 
 export default class OnlyOne extends Component {
-  private globalState = getGlobalState(this);
+  private globalState = getGlobalStateForReactComponent(this);
 
   render() {
     return (

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import getGlobalState from './getGlobalState';
+import { getGlobalStateForReactComponent } from './GlobalState/getGlobalState';
 
 interface IHelloProps {
   testNumber: number;
@@ -8,7 +8,7 @@ interface IHelloProps {
 }
 
 export default class Hello extends Component<IHelloProps, any> {
-  private globalState = getGlobalState(this);
+  private globalState = getGlobalStateForReactComponent(this);
 
   public componentWillUnmount() {
     console.log('componentWillUnmount of Hello');

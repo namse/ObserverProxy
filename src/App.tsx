@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import './App.css';
 import Hello from './Hello';
-import getGlobalState from './getGlobalState';
 import OnlyOne from './OnlyOne';
+import { getGlobalStateForReactComponent } from './GlobalState/getGlobalState';
 
 class App extends Component {
   state = {
     showTest: true,
   };
 
-  private globalState = getGlobalState(this);
+  private globalState = getGlobalStateForReactComponent(this);
 
   public componentDidMount() {
     console.log(this.globalState);
