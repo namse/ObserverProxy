@@ -58,7 +58,7 @@ function makePropertyAsProxy(object: Object, proxy: any, observer: IObserver | u
   });
 }
 
-export function createObserverProxy<T>(object: T, observer: IObserver | undefined): T {
+export default function createObserverProxy<T>(object: T, observer: IObserver | undefined): T {
   if (!getSymbol(object)) {
     setSymbol(object);
   }
