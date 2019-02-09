@@ -1,51 +1,4 @@
-# Obserer Proxy
-
-Observer Proxy is watching object's changing.
-
-Observer Proxy only let you know when the value is changed which you are looking at.
-
-> If you get `object.a`, it will let you know if `object.a` changed.
->
-> Then `object.b` changed, it won't let you know. because you never get `object.b`!
-
-
-You can update your view like React using this automatically.
-
-# Install
-
-```
-npm install observer-proxy
-```
-
-# How to use
-
-``` JS
-import createObserverProxy, { Observer } from 'observer-proxy';
-
-const observer = new Observer({
-  onStateUpdate: () => {
-    // This funciton will be called when you change property by observer proxy.
-    // like `observerProxy.abc = 5;`.
-  },
-});
-
-// Make observer proxy
-const observerProxy = createObserverProxy(myObject, observer);
-
-// Get value
-const abc = observerProxy.abc;
-
-// Set value
-observerProxy.abc = 5;
-
-// Stop observing
-observer.stopObserving();
-```
-
-# How to use - Quick Example
-
-``` JS
-import createObserverProxy, { Observer } from 'observer-proxy';
+const { default: createObserverProxy, Observer } = require('../../dist/createObserverProxy');
 
 // 0. Prepare your object
 const myObject = {
@@ -121,25 +74,3 @@ console.log(myObject.abc); // console output -> 222
 
 console.log(observerProxy.abc); // console output -> 222
 console.log(observerProxy2.abc); // console output -> 222
-```
-
-# Examples: React Global State
-
-Here is example for React component. It can be use for Global State like Redux.
-
-```
-git clone https://github.com/skatpgusskat/ObserverProxy.git
-cd ObserverProxy
-npm run build
-cd examples/react-global-state
-npm run start
-```
-
-# Reference
-
-## Observer
-- new Observer({ onStateUpdate })
-  - onStateUpdate: `<Function>` / `() => void`
-    - onStateUpdate will be called when change property by observer proxy.
-- stopObserving: `<Function>` / `() => void`
-  - call this function to stop observing. onStateUpdate will never be called.

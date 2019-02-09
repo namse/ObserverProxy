@@ -1,6 +1,16 @@
-export interface IObserver {
+export class Observer {
   onStateUpdate: () => void;
-  onObserverWillDestroy: (() => void) | undefined;
+
+  constructor({
+    onStateUpdate,
+  }: {
+    onStateUpdate: () => void,
+  }) {
+    this.onStateUpdate = onStateUpdate;
+  }
+  stopObserving() {
+
+  }
 }
 
 const propertyObserversMap: any = {};
@@ -10,14 +20,14 @@ type PropertyObserversMapKey = {
   propertyName: string | number | Symbol;
 }
 
-function getPropertyObservers(key: PropertyObserversMapKey): IObserver[] {
+function getPropertyObservers(key: PropertyObserversMapKey): Observer[] {
   if (!propertyObserversMap[key.symbol as any]) {
     propertyObserversMap[key.symbol as any] = {};
   }
   return propertyObserversMap[key.symbol as any][key.propertyName as any];
 }
 
-function setPropertyObservers(key: PropertyObserversMapKey, observers: IObserver[]) {
+function setPropertyObservers(key: PropertyObserversMapKey, observers: Observer[]) {
   if (!propertyObserversMap[key.symbol as any]) {
     propertyObserversMap[key.symbol as any] = {};
   }
@@ -47,10 +57,10 @@ function copySymbol(fromObject: any, toObject: any) {
 }
 
 const symbolProxyObserversMap: {
-  [symbol: string]: Array<{ proxy: any, observer: IObserver | undefined }>
+  [symbol: string]: Array<{ proxy: any, observer: Observer | undefined }>
 } = {};
 
-function makePropertyAsProxy(object: Object, proxy: any, observer: IObserver | undefined) {
+function makePropertyAsProxy(object: Object, proxy: any, observer: Observer | undefined) {
   Object.entries(object).forEach(([key, value]) => {
     if (typeof value === 'object') {
       proxy[key] = createObserverProxy(value, observer);
@@ -58,7 +68,7 @@ function makePropertyAsProxy(object: Object, proxy: any, observer: IObserver | u
   });
 }
 
-export default function createObserverProxy<T>(object: T, observer: IObserver | undefined): T {
+export default function createObserverProxy<T>(object: T, observer: Observer | undefined): T {
   if (!getSymbol(object)) {
     setSymbol(object);
   }
@@ -95,13 +105,13 @@ export default function createObserverProxy<T>(object: T, observer: IObserver | 
         if (!observers.includes(observer)) {
           observers.push(observer);
 
-          const originalOnObserverWillDestroy = observer.onObserverWillDestroy;
-          observer.onObserverWillDestroy = () => {
+          const originalStopObserving = observer.stopObserving;
+          observer.stopObserving = () => {
             const index = observers.indexOf(observer);
             observers.splice(index, 1);
 
-            if (originalOnObserverWillDestroy) {
-              originalOnObserverWillDestroy();
+            if (originalStopObserving) {
+              originalStopObserving();
             }
           }
         }
