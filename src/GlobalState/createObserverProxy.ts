@@ -53,12 +53,12 @@ const symbolProxyObserversMap: {
 function makePropertyAsProxy(object: Object, proxy: any, observer: IObserver | undefined) {
   Object.entries(object).forEach(([key, value]) => {
     if (typeof value === 'object') {
-      proxy[key] = createStateProxy(value, observer);
+      proxy[key] = createObserverProxy(value, observer);
     }
   });
 }
 
-export function createStateProxy<T>(object: T, observer: IObserver | undefined): T {
+export function createObserverProxy<T>(object: T, observer: IObserver | undefined): T {
   if (!getSymbol(object)) {
     setSymbol(object);
   }
@@ -122,7 +122,7 @@ export function createStateProxy<T>(object: T, observer: IObserver | undefined):
         const symbol = getSymbol(object);
 
         symbolProxyObserversMap[symbol as any].forEach(({ proxy, observer }) => {
-          proxy[name] = createStateProxy(newValue, observer);
+          proxy[name] = createObserverProxy(newValue, observer);
         });
       }
 

@@ -1,9 +1,9 @@
 import { Component } from "react";
-import { createStateProxy, IObserver } from "./createStateProxy";
+import { createObserverProxy, IObserver } from "./createObserverProxy";
 import { initialGlobalState } from "./globalState";
 
 export function getGlobalState(observer: IObserver | undefined = undefined) {
-  return createStateProxy(initialGlobalState, observer);
+  return createObserverProxy(initialGlobalState, observer);
 }
 
 export function getGlobalStateForReactComponent(reactComponent: Component) {
