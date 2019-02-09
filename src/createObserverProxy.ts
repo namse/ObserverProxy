@@ -125,18 +125,12 @@ export default function createObserverProxy<T>(object: T, observer: IObserver | 
           proxy[name] = createObserverProxy(newValue, observer);
         });
       }
-
-      console.log("before");
-      console.log(target, name, newValue);
       Reflect.set(object as Object, name, newValue);
-      console.log("after");
 
       const observers = getPropertyObservers({
         symbol: getSymbol(object),
         propertyName: name,
       });
-
-      console.log(observers);
 
       if (observers) {
         observers.forEach(observer => {

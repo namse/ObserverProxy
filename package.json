@@ -1,30 +1,24 @@
 {
-  "name": "react-experiment",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@types/jest": "24.0.0",
-    "@types/node": "10.12.21",
-    "@types/react": "16.8.2",
-    "@types/react-dom": "16.8.0",
-    "react": "^16.8.1",
-    "react-dom": "^16.8.1",
-    "react-scripts": "2.1.3",
-    "typescript": "3.3.1"
-  },
+  "name": "observer-proxy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/createObserverProxy.js",
+  "types": "dist/createObserverProxy.d.ts",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skatpgusskat/GlobalStateUsingJSProxy.git"
   },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+  "author": "SeHyun Nam (namse, skatpgusskat@naver.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/skatpgusskat/GlobalStateUsingJSProxy/issues"
+  },
+  "homepage": "https://github.com/skatpgusskat/GlobalStateUsingJSProxy#readme",
+  "dependencies": {
+    "typescript": "^3.3.3"
+  }
 }
