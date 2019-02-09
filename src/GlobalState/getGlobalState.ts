@@ -1,5 +1,5 @@
 import { Component } from "react";
-import { createObserverProxy, IObserver } from "./createObserverProxy";
+import { createStateProxy, IObserver } from "./createStateProxy";
 
 interface IState {
   abc: number,
@@ -48,7 +48,7 @@ const initialState: IState = {
 
 console.log('after init state')
 export function getGlobalState(observer: IObserver | undefined = undefined) {
-  return createObserverProxy(initialState, observer);
+  return createStateProxy(initialState, observer);
 }
 
 export function getGlobalStateForReactComponent(reactComponent: Component) {
