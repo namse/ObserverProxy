@@ -23,7 +23,7 @@ npm install observer-proxy
 import createObserverProxy from 'observer-proxy'
 
 // 0. Prepare your object
-const initialGlobalState = {
+const myObject = {
   abc: 123,
   def: 456,
 };
@@ -45,7 +45,7 @@ const observer = {
 
 
 // 2. Create Observer Proxy
-const objectProxy = createObserverProxy(initialGlobalState, observer);
+const objectProxy = createObserverProxy(myObject, observer);
 
 
 
@@ -53,22 +53,33 @@ const objectProxy = createObserverProxy(initialGlobalState, observer);
 
 // umm... I need abc!
 const abc = objectProxy.abc;
-console.log(abc);
+console.log(abc); // console output -> 123
+
+console.log(myObject.abc); // console output -> 123
 ...
 
 
 // 4. update
 objectProxy.abc = 135; // console output -> 'state update (onStateUpdate called)'
 
+console.log(myObject.abc); // console output -> 135
+                           // objectProxy change myObject's value.
+
 objectProxy.def = 246; // console output -> nothing
                        // becuse you didn't get 'def' before!
                        // onStateUpdate not called!
+
+console.log(myObject.abc); // console output -> 246
+                           // objectProxy change myObject's value.
 
 
 // 5. Stop wathcing
 onObserverWillDestroy();
 
 objectProxy.abc = 222; // console output -> nothing
+
+console.log(objectProxy.abc); // console output -> 222
+console.log(myObject.abc); // console output -> 222
 
 ```
 
