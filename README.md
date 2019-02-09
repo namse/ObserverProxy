@@ -19,8 +19,8 @@ npm install observer-proxy
 
 # How to use - Quick Example
 
-``` TS
-import createObserverProxy from 'observer-proxy'
+``` JS
+const createObserverProxy = require('observer-proxy');
 
 // 0. Prepare your object
 const myObject = {
@@ -29,57 +29,80 @@ const myObject = {
 };
 
 // 1. Define your observer
-function onStateUpdate() {
-  console.log('state update (onStateUpdate called)');
-}
-
-// call this funciton before you destroy observer.
-function onObserverWillDestroy() {
-
-}
-
 const observer = {
-  onStateUpdate,
-  onObserverWillDestroy,
+  onStateUpdate: () => {
+    console.log('Observer State Update Detected');
+  },
+  onObserverWillDestroy: () => { // call this funciton before you destroy observer.
+    console.log('Observer will destory');
+  },
 }
 
 
 // 2. Create Observer Proxy
-const objectProxy = createObserverProxy(myObject, observer);
+const observerProxy = createObserverProxy(myObject, observer);
 
 
 
 // 3. watch what you want.
 
 // umm... I need abc!
-const abc = objectProxy.abc;
+const abc = observerProxy.abc;
 console.log(abc); // console output -> 123
 
 console.log(myObject.abc); // console output -> 123
 
 
 // 4. update
-objectProxy.abc = 135; // console output -> 'state update (onStateUpdate called)'
+observerProxy.abc = 135; // console output -> 'Observer State Update Detected'
 
 console.log(myObject.abc); // console output -> 135
-                           // objectProxy change myObject's value.
+                           // observerProxy change myObject's value.
 
-objectProxy.def = 246; // console output -> nothing
+observerProxy.def = 246; // console output -> nothing
                        // becuse you didn't get 'def' before!
                        // onStateUpdate not called!
 
-console.log(myObject.abc); // console output -> 246
-                           // objectProxy change myObject's value.
+console.log(myObject.def); // console output -> 246
+                           // observerProxy change myObject's value.
+
+myObject.abc = 357; // console ouput -> nothing
+                    // because object proxy only watch when you change value by object proxy.
+
+
+// 4.1 onStateUpdate Event by other observer proxy's changing
+
+const observer2 = {
+  onStateUpdate: () => {
+    console.log('Observer 2 State Update Detected');
+  },
+  onObserverWillDestroy: () => {
+    console.log('Observer 2 will destory');
+  },
+}
+const observerProxy2 = createObserverProxy(myObject, observer2);
+
+observerProxy2.abc = 468; // console output -> 'Observer State Update Detected'
+                          // observerProxy2 doesn't detect 'abc'. because we didn't get 'abc' of observerProxy2.
+
+const abcByObserverProxy2 = observerProxy2.abc;
+
+observerProxy2.abc = 579; // console output -> 'Observer State Update Detected'
+                          // console output -> 'Observer 2 State Update Detected'
+
+// stop observerProxy2. Thank you observer proxy 2!!
+observer2.onObserverWillDestroy();
 
 
 // 5. Stop wathcing
-onObserverWillDestroy();
+observer.onObserverWillDestroy();
 
-objectProxy.abc = 222; // console output -> nothing
+observerProxy.abc = 222; // console output -> nothing
 
-console.log(objectProxy.abc); // console output -> 222
 console.log(myObject.abc); // console output -> 222
 
+console.log(observerProxy.abc); // console output -> 222
+console.log(observerProxy2.abc); // console output -> 222
 ```
 
 # React Example
