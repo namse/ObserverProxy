@@ -17,7 +17,7 @@ You can update your view like React using this automatically.
 npm install observer-proxy
 ```
 
-# How to use
+# How to use - Quick Example
 
 ``` TS
 import createObserverProxy from 'observer-proxy'
