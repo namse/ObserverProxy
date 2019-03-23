@@ -126,8 +126,12 @@ export default function createObserverProxy<T>(object: T, observer: Observer | u
     set(target: any, name, newValue) {
       if (typeof newValue === 'object') {
         const previousValue = (object as any)[name];
-
-        copySymbol(previousValue, newValue);
+        
+        if (previousValue) {
+          copySymbol(previousValue, newValue);
+        } else {
+          setSymbol(newValue);
+        }
 
         const symbol = getSymbol(object);
 
