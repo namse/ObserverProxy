@@ -20,6 +20,10 @@ type PropertyObserversMapKey = {
   propertyName: string | number | Symbol;
 }
 
+function isPureObjectOrArray(target: any): boolean {
+  return target instanceof Object && !(target instanceof Date);
+}
+
 function getPropertyObservers(key: PropertyObserversMapKey): Observer[] {
   if (!propertyObserversMap[key.symbol as any]) {
     propertyObserversMap[key.symbol as any] = {};
@@ -49,7 +53,7 @@ function copySymbol(fromObject: any, toObject: any) {
   Object.keys(fromObject).forEach((key) => {
     const fromObjectValue = fromObject[key];
     const toObjectValue = toObject[key];
-    if (typeof fromObjectValue !== 'object' || typeof toObjectValue !== 'object') {
+    if (!isPureObjectOrArray(fromObjectValue) || !isPureObjectOrArray(toObjectValue)) {
       return;
     }
     copySymbol(fromObjectValue, toObjectValue);
@@ -62,7 +66,7 @@ const symbolProxyObserversMap: {
 
 function makePropertyAsProxy(object: Object, proxy: any, observer: Observer | undefined) {
   Object.entries(object).forEach(([key, value]) => {
-    if (typeof value === 'object') {
+    if (isPureObjectOrArray(value)) {
       proxy[key] = createObserverProxy(value, observer);
     }
   });
@@ -94,6 +98,8 @@ export default function createObserverProxy<T>(object: T, observer: Observer | u
           symbol: getSymbol(object),
           propertyName: name,
         });
+
+        // Create Observers
         if (!observers) {
           observers = [];
           setPropertyObservers({
@@ -102,6 +108,7 @@ export default function createObserverProxy<T>(object: T, observer: Observer | u
           }, observers);
         }
 
+        // Attach Observer
         if (!observers.includes(observer)) {
           observers.push(observer);
 
@@ -117,16 +124,16 @@ export default function createObserverProxy<T>(object: T, observer: Observer | u
         }
       }
       const value = (object as any)[name];
-      if (typeof value === 'object') {
+      if (isPureObjectOrArray(value)) {
         const childProxy = target[name];
         return childProxy;
       }
       return value;
     },
     set(target: any, name, newValue) {
-      if (typeof newValue === 'object') {
+      if (isPureObjectOrArray(newValue)) {
         const previousValue = (object as any)[name];
-        
+
         if (previousValue) {
           copySymbol(previousValue, newValue);
         } else {
