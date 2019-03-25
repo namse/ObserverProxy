@@ -72,12 +72,14 @@ function makePropertyAsProxy(object: Object, proxy: any, observer: Observer | un
   });
 }
 
-export default function createObserverProxy<T>(object: T, observer: Observer | undefined): T {
+export default function createObserverProxy<T extends Object>(object: T, observer: Observer | undefined): T {
   if (!getSymbol(object)) {
     setSymbol(object);
   }
 
   const proxy: any = {};
+  Object.setPrototypeOf(proxy, Object.getPrototypeOf(object));
+
   const symbol = getSymbol(object);
   if (!symbolProxyObserversMap[symbol as any]) {
     symbolProxyObserversMap[symbol as any] = [];
@@ -92,7 +94,6 @@ export default function createObserverProxy<T>(object: T, observer: Observer | u
 
   return new Proxy(proxy as Object, {
     get(target: any, name) {
-      // console.log(`i use -------------------------------------${name as string}`);
       if (observer) {
         let observers = getPropertyObservers({
           symbol: getSymbol(object),
